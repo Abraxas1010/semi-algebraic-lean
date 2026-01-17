@@ -1,0 +1,30 @@
+{
+  "vars": [
+    { "name": "x", "lo": -1.0, "hi": 1.0 },
+    { "name": "y", "lo": -1.0, "hi": 1.0 }
+  ],
+  "formula": {
+    "kind": "and",
+    "children": [
+      {
+        "kind": "cmp",
+        "op": "<=",
+        "lhs": {
+          "kind": "add",
+          "children": [
+            { "kind": "pow", "base": { "kind": "var", "name": "x" }, "exp": 2 },
+            { "kind": "pow", "base": { "kind": "var", "name": "y" }, "exp": 2 }
+          ]
+        },
+        "rhs": { "kind": "const", "value": 1.0 }
+      },
+      {
+        "kind": "cmp",
+        "op": ">=",
+        "lhs": { "kind": "var", "name": "x" },
+        "rhs": { "kind": "const", "value": 0.5 }
+      }
+    ]
+  },
+  "config": { "precision": 0.001 }
+}

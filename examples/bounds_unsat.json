@@ -1,0 +1,12 @@
+{
+  "vars": [
+    { "name": "x", "lo": 0.0, "hi": 1.0 }
+  ],
+  "formula": {
+    "kind": "cmp",
+    "op": ">",
+    "lhs": { "kind": "var", "name": "x" },
+    "rhs": { "kind": "const", "value": 2.0 }
+  },
+  "config": { "precision": 0.001 }
+}

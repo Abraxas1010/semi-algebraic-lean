@@ -1,0 +1,27 @@
+{
+  "vars": [
+    { "name": "x", "lo": 0.0, "hi": 10.0 }
+  ],
+  "formula": {
+    "kind": "and",
+    "children": [
+      {
+        "kind": "cmp",
+        "op": "<=",
+        "lhs": {
+          "kind": "add",
+          "children": [
+            { "kind": "pow", "base": { "kind": "var", "name": "x" }, "exp": 2 },
+            { "kind": "mul", "children": [
+              { "kind": "const", "value": -6.0 },
+              { "kind": "var", "name": "x" }
+            ]},
+            { "kind": "const", "value": 8.0 }
+          ]
+        },
+        "rhs": { "kind": "const", "value": 0.0 }
+      }
+    ]
+  },
+  "config": { "precision": 0.0001 }
+}
