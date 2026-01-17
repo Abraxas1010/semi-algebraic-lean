@@ -7,6 +7,13 @@
 
 ---
 
+<sub>
+<strong>Notice of Proprietary Information</strong><br>
+This document outlines foundational concepts and methodologies developed during internal research and development at Apoth3osis. To protect our intellectual property and adhere to client confidentiality agreements, the code, architectural details, and performance metrics presented herein may be simplified, redacted, or presented for illustrative purposes only. This paper is intended to share our conceptual approach and does not represent the full complexity, scope, or performance of our production-level systems. The complete implementation and its derivatives remain proprietary.
+</sub>
+
+---
+
 # semi-algebraic-lean
 
 [![Lean 4](https://img.shields.io/badge/Lean-4.24.0-blue.svg)](https://leanprover.github.io/)
@@ -14,7 +21,45 @@
 [![No Sorry](https://img.shields.io/badge/sorry-0-brightgreen.svg)](#verification)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+## Credo
+
+> *"In mathematics the art of proposing a question must be held of higher value than solving it."*
+> — **Georg Cantor**
+
+This library embodies the principle that asking the right questions about decidability and verification in real arithmetic is as important as the algorithms themselves. Semi-algebraic geometry sits at the intersection of algebra and geometry, where quantifier elimination (Tarski) provides decidability but computational intractability demands careful engineering of certificate generation and verification.
+
+### Acknowledgment
+
+We humbly thank the collective intelligence of humanity for providing the technology and culture we cherish. We do our best to properly reference the authors of the works utilized herein, though we may occasionally fall short. Our formalization acts as a reciprocal validation—confirming the structural integrity of their original insights while securing the foundation upon which we build. In truth, all creative work is derivative; we stand on the shoulders of those who came before, and our contributions are simply the next link in an unbroken chain of human ingenuity.
+
+---
+
 **Verified constraint solving for quantifier-free real polynomial constraints.**
+
+## Proof Map
+
+<table>
+<tr>
+<td align="center" width="50%">
+<strong>2D Proof Map</strong><br/>
+<em>Click to explore: pan, zoom, search declarations</em><br/>
+<a href="https://abraxas1010.github.io/semi-algebraic-lean/artifacts/visuals/semialgebraic_2d.html">
+  <img src="artifacts/visuals/semialgebraic_2d_preview.svg" alt="UMAP 2D preview" width="100%"/>
+</a><br/>
+<a href="https://abraxas1010.github.io/semi-algebraic-lean/artifacts/visuals/semialgebraic_2d.html">Open Interactive 2D Map</a>
+</td>
+<td align="center" width="50%">
+<strong>3D Proof Map</strong><br/>
+<em>Click to explore: rotate, zoom, click nodes</em><br/>
+<a href="https://abraxas1010.github.io/semi-algebraic-lean/artifacts/visuals/semialgebraic_3d.html">
+  <img src="artifacts/visuals/semialgebraic_3d_preview.svg" alt="UMAP 3D preview" width="100%"/>
+</a><br/>
+<a href="https://abraxas1010.github.io/semi-algebraic-lean/artifacts/visuals/semialgebraic_3d.html">Open Interactive 3D Map</a>
+</td>
+</tr>
+</table>
+
+---
 
 This library provides a type-safe Lean 4 interface for solving and verifying semi-algebraic constraints (quantifier-free formulas over polynomial inequalities). It integrates with external solvers (dReal, Z3, Yices) via Docker and produces cryptographically-hashed, machine-verifiable certificates.
 
@@ -152,17 +197,22 @@ Beyond the current `Unsat.lean` patterns (bounds contradiction, nonneg-le-neg, n
 
 ---
 
+## References
+
+- **Tarski (1951)**: A Decision Method for Elementary Algebra and Geometry
+- **Collins (1975)**: Quantifier Elimination for Real Closed Fields by Cylindrical Algebraic Decomposition
+- **Gao, Kong, Chen (2013)**: dReal: An SMT Solver for Nonlinear Theories over the Reals
+- **RFC 8785**: JSON Canonicalization Scheme (JCS)
+
+---
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).
 
 ---
 
-## Acknowledgments
-
-This project is part of the [Apoth3osis](https://apoth3osis.ai) research initiative.
-
-Solver backends:
-- [dReal](https://dreal.github.io/) - SMT solver for nonlinear arithmetic
-- [Z3](https://github.com/Z3Prover/z3) - Microsoft Research SMT solver
-- [Yices](https://yices.csl.sri.com/) - SRI International SMT solver
+<sub>
+Part of the <a href="https://github.com/apoth3osis/HeytingLean">HeytingLean</a> ecosystem.<br>
+<a href="https://apoth3osis.io">apoth3osis.io</a>
+</sub>

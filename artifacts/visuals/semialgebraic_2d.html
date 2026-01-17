@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SemiAlgebraic - 2D Proof Map</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --card: #0f1721;
+      --border: #1c2a3a;
+      --text: #e6eef7;
+      --dim: #6b7d8c;
+      --accent: #4a9eff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 20px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 100;
+    }
+    #header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    #search {
+      padding: 8px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      width: 250px;
+      font-size: 14px;
+    }
+    #search:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    #legend {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-left: auto;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 1;
+      transition: opacity 0.2s;
+    }
+    .legend-item.dimmed { opacity: 0.3; }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    #canvas {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    #tooltip {
+      position: fixed;
+      padding: 10px 14px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 200;
+      max-width: 300px;
+    }
+    #tooltip.visible { opacity: 1; }
+    #tooltip .name { font-weight: 600; color: var(--accent); }
+    #tooltip .kind { color: var(--dim); font-size: 11px; margin-top: 2px; }
+    #tooltip .family { color: var(--text); font-size: 12px; margin-top: 4px; }
+    #stats {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      font-size: 11px;
+      color: var(--dim);
+    }
+  </style>
+</head>
+<body>
+  <div id="header">
+    <h1>SemiAlgebraic 2D Proof Map</h1>
+    <input type="text" id="search" placeholder="Search declarations...">
+    <div id="legend"></div>
+  </div>
+  <canvas id="canvas"></canvas>
+  <div id="tooltip"></div>
+  <div id="stats"></div>
+
+  <script src="semialgebraic_proofs_data.js"></script>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const tooltip = document.getElementById('tooltip');
+    const search = document.getElementById('search');
+    const legend = document.getElementById('legend');
+    const stats = document.getElementById('stats');
+
+    let width, height;
+    let offsetX = 0, offsetY = 0;
+    let scale = 1;
+    let isDragging = false;
+    let dragStartX, dragStartY;
+    let activeFamily = null;
+    let searchTerm = '';
+    let hoveredItem = null;
+
+    const data = semialgebraicProofsData;
+    const colors = familyColors;
+
+    function resize() {
+      width = window.innerWidth;
+      height = window.innerHeight - 60;
+      canvas.width = width * devicePixelRatio;
+      canvas.height = height * devicePixelRatio;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      ctx.scale(devicePixelRatio, devicePixelRatio);
+      draw();
+    }
+
+    function toScreen(x, y) {
+      const cx = width / 2 + offsetX;
+      const cy = height / 2 + offsetY;
+      const s = Math.min(width, height) * 0.8 * scale;
+      return {
+        x: cx + (x - 0.5) * s,
+        y: cy + (y - 0.5) * s
+      };
+    }
+
+    function toWorld(sx, sy) {
+      const cx = width / 2 + offsetX;
+      const cy = height / 2 + offsetY;
+      const s = Math.min(width, height) * 0.8 * scale;
+      return {
+        x: (sx - cx) / s + 0.5,
+        y: (sy - cy) / s + 0.5
+      };
+    }
+
+    function isVisible(item) {
+      if (activeFamily && item.family !== activeFamily) return false;
+      if (searchTerm && !item.name.toLowerCase().includes(searchTerm)) return false;
+      return true;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+
+      // Draw edges
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 1;
+      data.edges.forEach(([i, j]) => {
+        const a = data.items[i];
+        const b = data.items[j];
+        if (!isVisible(a) || !isVisible(b)) return;
+        const pa = toScreen(a.pos.x, a.pos.y);
+        const pb = toScreen(b.pos.x, b.pos.y);
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.stroke();
+      });
+
+      // Draw nodes
+      data.items.forEach((item, idx) => {
+        if (!isVisible(item)) return;
+        const p = toScreen(item.pos.x, item.pos.y);
+        const r = item === hoveredItem ? 8 : 5;
+        const color = colors[item.family] || '#888';
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+
+      // Stats
+      const visible = data.items.filter(isVisible).length;
+      stats.textContent = `${visible} / ${data.items.length} declarations | Scroll to zoom, drag to pan`;
+    }
+
+    function findItemAt(sx, sy) {
+      const w = toWorld(sx, sy);
+      const threshold = 0.03 / scale;
+      for (let i = data.items.length - 1; i >= 0; i--) {
+        const item = data.items[i];
+        if (!isVisible(item)) continue;
+        const dx = item.pos.x - w.x;
+        const dy = item.pos.y - w.y;
+        if (Math.sqrt(dx*dx + dy*dy) < threshold) return item;
+      }
+      return null;
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      isDragging = true;
+      dragStartX = e.clientX - offsetX;
+      dragStartY = e.clientY - offsetY;
+    });
+
+    canvas.addEventListener('mousemove', e => {
+      if (isDragging) {
+        offsetX = e.clientX - dragStartX;
+        offsetY = e.clientY - dragStartY;
+        draw();
+      } else {
+        const item = findItemAt(e.clientX, e.clientY - 60);
+        if (item !== hoveredItem) {
+          hoveredItem = item;
+          draw();
+        }
+        if (item) {
+          tooltip.innerHTML = `
+            <div class="name">${item.name}</div>
+            <div class="kind">${item.kind}</div>
+            <div class="family">${item.family}</div>
+          `;
+          tooltip.style.left = (e.clientX + 15) + 'px';
+          tooltip.style.top = (e.clientY + 15) + 'px';
+          tooltip.classList.add('visible');
+        } else {
+          tooltip.classList.remove('visible');
+        }
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => isDragging = false);
+    canvas.addEventListener('mouseleave', () => {
+      isDragging = false;
+      tooltip.classList.remove('visible');
+    });
+
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      const factor = e.deltaY > 0 ? 0.9 : 1.1;
+      scale *= factor;
+      scale = Math.max(0.2, Math.min(5, scale));
+      draw();
+    });
+
+    search.addEventListener('input', e => {
+      searchTerm = e.target.value.toLowerCase();
+      draw();
+    });
+
+    // Build legend
+    const families = [...new Set(data.items.map(i => i.family))].sort();
+    families.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'legend-item';
+      div.innerHTML = `<span class="legend-dot" style="background:${colors[f]}"></span>${f}`;
+      div.addEventListener('click', () => {
+        if (activeFamily === f) {
+          activeFamily = null;
+          document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('dimmed'));
+        } else {
+          activeFamily = f;
+          document.querySelectorAll('.legend-item').forEach(el => {
+            el.classList.toggle('dimmed', !el.textContent.includes(f));
+          });
+        }
+        draw();
+      });
+      legend.appendChild(div);
+    });
+
+    window.addEventListener('resize', resize);
+    resize();
+  </script>
+</body>
+</html>
