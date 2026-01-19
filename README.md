@@ -208,11 +208,5 @@ Beyond the current `Unsat.lean` patterns (bounds contradiction, nonneg-le-neg, n
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
-
----
-
-<sub>
-Part of the <a href="https://github.com/apoth3osis/HeytingLean">HeytingLean</a> ecosystem.<br>
-<a href="https://apoth3osis.io">apoth3osis.io</a>
-</sub>
+This project is provided under the Apoth3osis License Stack v1.
+See `LICENSE.md` and the files under `licenses/`.
